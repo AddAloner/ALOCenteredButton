@@ -31,7 +31,7 @@ static CGFloat const kALODefaultImageLabelSpacing = 10.f;
 
 - (void)fieldsInit
 {
-    _buttonOrientation = ALOCenteredButtonOrientationHorizontal;
+    _buttonOrientation = ALOCenteredButtonOrientationVertical;
     _imageLabelSpacing = kALODefaultImageLabelSpacing;
 }
 
@@ -59,24 +59,44 @@ static CGFloat const kALODefaultImageLabelSpacing = 10.f;
     }
 }
 
+- (CGSize)sizeThatFits:(CGSize)size
+{
+    CGSize labelSize = [self.titleLabel sizeThatFits:size];
+    CGSize imageSize = [self.imageView sizeThatFits:size];
+    
+    if (self.buttonOrientation == ALOCenteredButtonOrientationRightToLeft) {
+        return CGSizeMake(labelSize.width + imageSize.width + self.imageLabelSpacing,
+                          MAX(labelSize.height, imageSize.height));
+    } else {
+        return CGSizeMake(MAX(labelSize.width, imageSize.width),
+                          labelSize.height + imageSize.height + self.imageLabelSpacing);
+        
+    }
+}
+
 - (void)layoutSubviews
 {
     [super layoutSubviews];
     
-    if (self.buttonOrientation == ALOCenteredButtonOrientationHorizontal) {
+    if (self.buttonOrientation == ALOCenteredButtonOrientationRightToLeft) {
         self.titleLabel.textAlignment = NSTextAlignmentLeft;
         CGFloat sumWidth = CGRectGetWidth(self.imageView.frame) + CGRectGetWidth(self.titleLabel.frame) + self.imageLabelSpacing;
-        
-        // reposition icon
-        CGRect imageFrame = self.imageView.frame;
-        imageFrame.origin = CGPointMake(truncf((self.bounds.size.width - sumWidth) / 2),
-                                        truncf((self.bounds.size.height - imageFrame.size.height) / 2));
-        self.imageView.frame = imageFrame;
+        CGFloat buttonWidth = CGRectGetWidth(self.bounds);
         // reposition label
         CGRect labelFrame = self.titleLabel.frame;
-        labelFrame.origin = CGPointMake(CGRectGetMaxX(imageFrame) + self.imageLabelSpacing,
+
+        if (sumWidth > buttonWidth) {
+            labelFrame.size.width -= sumWidth - buttonWidth;
+        }
+        
+        labelFrame.origin = CGPointMake(truncf((buttonWidth - sumWidth) / 2),
                                 truncf((self.bounds.size.height - labelFrame.size.height) / 2));
         self.titleLabel.frame = labelFrame;
+        // reposition icon
+        CGRect imageFrame = self.imageView.frame;
+        imageFrame.origin = CGPointMake(CGRectGetMaxX(labelFrame) + self.imageLabelSpacing,
+                                        truncf((self.bounds.size.height - imageFrame.size.height) / 2));
+        self.imageView.frame = imageFrame;
     } else {
         self.titleLabel.textAlignment = NSTextAlignmentCenter;
         CGFloat sumHeight = CGRectGetHeight(self.imageView.frame) + CGRectGetHeight(self.titleLabel.frame) + self.imageLabelSpacing;
