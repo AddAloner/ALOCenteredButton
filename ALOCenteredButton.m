@@ -64,40 +64,23 @@ static CGFloat const kALODefaultImageLabelSpacing = 10.f;
     CGSize labelSize = [self.titleLabel sizeThatFits:size];
     CGSize imageSize = [self.imageView sizeThatFits:size];
     
-    if (self.buttonOrientation == ALOCenteredButtonOrientationRightToLeft) {
-        return CGSizeMake(labelSize.width + imageSize.width + self.imageLabelSpacing,
-                          MAX(labelSize.height, imageSize.height));
-    } else {
-        return CGSizeMake(MAX(labelSize.width, imageSize.width),
-                          labelSize.height + imageSize.height + self.imageLabelSpacing);
-        
+    switch (self.buttonOrientation) {
+        case ALOCenteredButtonOrientationRightToLeft:
+        case ALOCenteredButtonOrientationLeftToRight:
+            return CGSizeMake(labelSize.width + imageSize.width + self.imageLabelSpacing,
+                              MAX(labelSize.height, imageSize.height));
+            
+        case ALOCenteredButtonOrientationVertical:
+            return CGSizeMake(MAX(labelSize.width, imageSize.width),
+                              labelSize.height + imageSize.height + self.imageLabelSpacing);
     }
 }
 
 - (void)layoutSubviews
 {
     [super layoutSubviews];
-    
-    if (self.buttonOrientation == ALOCenteredButtonOrientationRightToLeft) {
-        self.titleLabel.textAlignment = NSTextAlignmentLeft;
-        CGFloat sumWidth = CGRectGetWidth(self.imageView.frame) + CGRectGetWidth(self.titleLabel.frame) + self.imageLabelSpacing;
-        CGFloat buttonWidth = CGRectGetWidth(self.bounds);
-        // reposition label
-        CGRect labelFrame = self.titleLabel.frame;
 
-        if (sumWidth > buttonWidth) {
-            labelFrame.size.width -= sumWidth - buttonWidth;
-        }
-        
-        labelFrame.origin = CGPointMake(truncf((buttonWidth - sumWidth) / 2),
-                                truncf((self.bounds.size.height - labelFrame.size.height) / 2));
-        self.titleLabel.frame = labelFrame;
-        // reposition icon
-        CGRect imageFrame = self.imageView.frame;
-        imageFrame.origin = CGPointMake(CGRectGetMaxX(labelFrame) + self.imageLabelSpacing,
-                                        truncf((self.bounds.size.height - imageFrame.size.height) / 2));
-        self.imageView.frame = imageFrame;
-    } else {
+    if (self.buttonOrientation == ALOCenteredButtonOrientationVertical) {
         self.titleLabel.textAlignment = NSTextAlignmentCenter;
         CGFloat sumHeight = CGRectGetHeight(self.imageView.frame) + CGRectGetHeight(self.titleLabel.frame) + self.imageLabelSpacing;
         
@@ -112,7 +95,34 @@ static CGFloat const kALODefaultImageLabelSpacing = 10.f;
                                        CGRectGetMaxY(imageFrame) + self.imageLabelSpacing,
                                        self.bounds.size.width, self.titleLabel.frame.size.height);
         self.titleLabel.frame = labelFrame;
+        return;
     }
+    
+    
+    // horizontal
+    self.titleLabel.textAlignment = NSTextAlignmentLeft;
+    CGFloat sumWidth = CGRectGetWidth(self.imageView.frame) + CGRectGetWidth(self.titleLabel.frame) + self.imageLabelSpacing;
+    CGFloat buttonWidth = CGRectGetWidth(self.bounds);
+    
+    CGRect labelFrame = self.titleLabel.frame;
+    if (sumWidth > buttonWidth) {
+        labelFrame.size.width -= sumWidth - buttonWidth;
+    }
+    
+    CGRect imageFrame = self.imageView.frame;
+    CGFloat startX = truncf((buttonWidth - sumWidth) / 2);
+    CGFloat labelFrameY = truncf((self.bounds.size.height - labelFrame.size.height) / 2);
+    CGFloat imageFrameY = truncf((self.bounds.size.height - imageFrame.size.height) / 2);
+    if (self.buttonOrientation == ALOCenteredButtonOrientationRightToLeft) {
+        labelFrame.origin = CGPointMake(startX, labelFrameY);
+        imageFrame.origin = CGPointMake(CGRectGetMaxX(labelFrame) + self.imageLabelSpacing, imageFrameY);
+    } else {
+        imageFrame.origin = CGPointMake(startX, imageFrameY);
+        labelFrame.origin = CGPointMake(CGRectGetMaxX(imageFrame) + self.imageLabelSpacing, labelFrameY);
+    }
+    
+    self.titleLabel.frame = labelFrame;
+    self.imageView.frame = imageFrame;
 }
 
 @end
