@@ -76,6 +76,10 @@ static CGFloat const kALODefaultImageLabelSpacing = 10.f;
     }
 }
 
+- (CGSize)intrinsicContentSize {
+    return [self sizeThatFits:CGSizeZero];
+}
+
 - (void)layoutSubviews
 {
     [super layoutSubviews];
