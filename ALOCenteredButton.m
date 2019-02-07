@@ -64,15 +64,22 @@ static CGFloat const kALODefaultImageLabelSpacing = 10.f;
     CGSize labelSize = [self.titleLabel sizeThatFits:size];
     CGSize imageSize = [self.imageView sizeThatFits:size];
     
+    // fix for zero width label
+    if (labelSize.width == 0) {
+        CGRect titleFrame = self.titleLabel.frame;
+        titleFrame.size.width = 0;
+        self.titleLabel.frame = titleFrame;
+    }
+    
     switch (self.buttonOrientation) {
         case ALOCenteredButtonOrientationRightToLeft:
         case ALOCenteredButtonOrientationLeftToRight:
-            return CGSizeMake(labelSize.width + imageSize.width + self.imageLabelSpacing,
-                              MAX(labelSize.height, imageSize.height));
+            return CGSizeMake(labelSize.width + imageSize.width + self.imageLabelSpacing + self.contentEdgeInsets.left + self.contentEdgeInsets.right,
+                              MAX(labelSize.height, imageSize.height) + self.contentEdgeInsets.top + self.contentEdgeInsets.bottom);
             
         case ALOCenteredButtonOrientationVertical:
-            return CGSizeMake(MAX(labelSize.width, imageSize.width),
-                              labelSize.height + imageSize.height + self.imageLabelSpacing);
+            return CGSizeMake(MAX(labelSize.width, imageSize.width) + self.contentEdgeInsets.left + self.contentEdgeInsets.right,
+                              labelSize.height + imageSize.height + self.imageLabelSpacing + self.contentEdgeInsets.top + self.contentEdgeInsets.bottom);
     }
 }
 
@@ -101,7 +108,6 @@ static CGFloat const kALODefaultImageLabelSpacing = 10.f;
         self.titleLabel.frame = labelFrame;
         return;
     }
-    
     
     // horizontal
     self.titleLabel.textAlignment = NSTextAlignmentLeft;
